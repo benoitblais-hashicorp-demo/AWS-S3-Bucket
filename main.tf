@@ -254,34 +254,3 @@ resource "aws_iam_role_policy" "cloudtrail_cloudwatch" {
   policy = data.aws_iam_policy_document.cloudtrail_cloudwatch_policy[0].json
 }
 
-# CloudTrail for S3 Data Events
-resource "aws_cloudtrail" "main" {
-  count = var.enable_cloudtrail ? 1 : 0
-
-  name                          = var.cloudtrail_name != "" ? var.cloudtrail_name : "${var.bucket_name}-trail"
-  s3_bucket_name                = var.cloudtrail_s3_bucket_name != "" ? var.cloudtrail_s3_bucket_name : aws_s3_bucket.main.id
-  s3_key_prefix                 = var.cloudtrail_s3_key_prefix
-  include_global_service_events = false
-  enable_log_file_validation    = true
-  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:*"
-  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_cloudwatch[0].arn
-
-  event_selector {
-    read_write_type           = "All"
-    include_management_events = false
-
-    data_resource {
-      type   = "AWS::S3::Object"
-      values = ["${aws_s3_bucket.main.arn}/"]
-    }
-  }
-
-  tags = merge(
-    var.tags,
-    {
-      Name = var.cloudtrail_name != "" ? var.cloudtrail_name : "${var.bucket_name}-trail"
-    }
-  )
-
-  depends_on = [aws_s3_bucket_policy.main]
-}
