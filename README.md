@@ -152,7 +152,7 @@ Description: Enable CloudTrail logging for S3 data events
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ### <a name="input_enable_encryption"></a> [enable\_encryption](#input\_enable\_encryption)
 
