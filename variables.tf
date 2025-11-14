@@ -40,7 +40,7 @@ variable "enforce_ssl" {
 variable "enable_cloudtrail" {
   type        = bool
   description = "Enable CloudTrail logging for S3 data events"
-  default     = false
+  default     = true
 }
 
 variable "cloudtrail_name" {

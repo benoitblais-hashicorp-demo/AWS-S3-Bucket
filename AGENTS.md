@@ -42,6 +42,7 @@ Organize your Terraform modules and repositories as follows:
 - Use `terraform fmt` before every commit to ensure consistent formatting
 - Run `terraform fmt -recursive` to format all subdirectories
 - Use TFLint for additional static code analysis and organization-specific rules
+- USe markdown-lint for additional analysis and organization-specific rules
 - Use Terraform-Docs to generate README.md file using the configuration file `./github/terraform-docs/.tfdocs-config.yml`.
 
 ## Code Formatting
