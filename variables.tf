@@ -16,7 +16,7 @@ variable "bucket_name" {
 variable "aws_region" {
   type        = string
   description = "AWS region where the S3 bucket will be created"
-  default     = "us-east-1"
+  default     = "ca-central-1"
 }
 
 variable "block_public_access" {
@@ -31,16 +31,40 @@ variable "enable_encryption" {
   default     = true
 }
 
-variable "enable_logging" {
+variable "enforce_ssl" {
   type        = bool
-  description = "Enable server access logging for the S3 bucket"
+  description = "Enforce SSL/TLS for all requests to the S3 bucket using bucket policy"
+  default     = true
+}
+
+variable "enable_cloudtrail" {
+  type        = bool
+  description = "Enable CloudTrail logging for S3 data events"
   default     = false
+}
+
+variable "cloudtrail_name" {
+  type        = string
+  description = "Name of the CloudTrail trail"
+  default     = ""
+}
+
+variable "cloudtrail_s3_bucket_name" {
+  type        = string
+  description = "Name of the S3 bucket for CloudTrail logs. Required if enable_cloudtrail is true"
+  default     = ""
+}
+
+variable "cloudtrail_s3_key_prefix" {
+  type        = string
+  description = "S3 key prefix for CloudTrail logs"
+  default     = "cloudtrail/"
 }
 
 variable "enable_mfa_delete" {
   type        = bool
   description = "Enable MFA delete for the S3 bucket versioning configuration. Versioning must be enabled"
-  default     = false
+  default     = true
 }
 
 variable "enable_versioning" {
@@ -53,24 +77,6 @@ variable "force_destroy" {
   type        = bool
   description = "Allow destruction of the bucket even if it contains objects"
   default     = false
-}
-
-variable "logging_target_bucket" {
-  type        = string
-  description = "Name of the target bucket for access logs. If not provided and logging is enabled, logs will be stored in the same bucket"
-  default     = ""
-}
-
-variable "logging_target_prefix" {
-  type        = string
-  description = "Prefix for all log object keys"
-  default     = "logs/"
-}
-
-variable "project_name" {
-  type        = string
-  description = "Name of the project for tagging resources"
-  default     = "s3-bucket-project"
 }
 
 variable "tags" {
