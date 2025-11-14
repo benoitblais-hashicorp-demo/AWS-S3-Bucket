@@ -15,9 +15,11 @@ To provision resources, the AWS provider requires credentials with appropriate I
 * `s3:PutBucketVersioning` - Configure bucket versioning
 * `s3:PutEncryptionConfiguration` - Configure server-side encryption
 * `s3:PutBucketPublicAccessBlock` - Configure public access block settings
+* `s3:PutBucketLogging` - Configure bucket logging
 * `s3:GetBucketVersioning` - Read bucket versioning configuration
 * `s3:GetEncryptionConfiguration` - Read encryption configuration
 * `s3:GetBucketPublicAccessBlock` - Read public access block settings
+* `s3:GetBucketLogging` - Read bucket logging configuration
 * `s3:ListBucket` - List bucket contents
 * `s3:PutBucketTagging` - Apply tags to buckets
 * `s3:GetBucketTagging` - Read bucket tags
@@ -43,6 +45,8 @@ This module provides the following key features:
   * Server-side encryption with AES256 enabled by default
   * Public access blocking enabled by default
   * Bucket versioning enabled by default
+  * MFA delete support for versioning protection
+* **Access Logging**: Optional server access logging for audit and compliance
 * **Flexible Configuration**: All security features can be optionally disabled
 * **Bucket Name Validation**: Input validation ensures bucket names meet AWS requirements
 * **Tagging Support**: Apply custom tags and automatic management tags
@@ -54,6 +58,7 @@ This module provides the following key features:
 This module provisions the following AWS resources:
 
 * **aws_s3_bucket** - Main S3 bucket resource
-* **aws_s3_bucket_versioning** - Bucket versioning configuration (optional, enabled by default)
+* **aws_s3_bucket_versioning** - Bucket versioning configuration with MFA delete support (optional, enabled by default)
 * **aws_s3_bucket_server_side_encryption_configuration** - Server-side encryption with AES256 (optional, enabled by default)
 * **aws_s3_bucket_public_access_block** - Public access block settings (optional, enabled by default)
+* **aws_s3_bucket_logging** - Server access logging configuration (optional, disabled by default)

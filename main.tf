@@ -18,7 +18,8 @@ resource "aws_s3_bucket_versioning" "main" {
   bucket = aws_s3_bucket.main.id
 
   versioning_configuration {
-    status = "Enabled"
+    status     = "Enabled"
+    mfa_delete = var.enable_mfa_delete ? "Enabled" : "Disabled"
   }
 }
 
@@ -45,4 +46,14 @@ resource "aws_s3_bucket_public_access_block" "main" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+# S3 Bucket Logging Configuration
+resource "aws_s3_bucket_logging" "main" {
+  count = var.enable_logging ? 1 : 0
+
+  bucket = aws_s3_bucket.main.id
+
+  target_bucket = var.logging_target_bucket != "" ? var.logging_target_bucket : aws_s3_bucket.main.id
+  target_prefix = var.logging_target_prefix
 }
