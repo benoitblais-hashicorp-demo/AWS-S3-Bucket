@@ -162,6 +162,109 @@ resource "aws_cloudtrail" "main" {
   s3_key_prefix                 = var.cloudtrail_s3_key_prefix
   include_global_service_events = false
   enable_log_file_validation    = true
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:*"
+  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_cloudwatch[0].arn
+
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = false
+
+    data_resource {
+      type   = "AWS::S3::Object"
+      values = ["${aws_s3_bucket.main.arn}/"]
+    }
+  }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = var.cloudtrail_name != "" ? var.cloudtrail_name : "${var.bucket_name}-trail"
+    }
+  )
+
+  depends_on = [aws_s3_bucket_policy.main]
+}
+
+# CloudWatch Log Group for CloudTrail
+resource "aws_cloudwatch_log_group" "cloudtrail" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  name              = var.cloudtrail_cloudwatch_log_group_name != "" ? var.cloudtrail_cloudwatch_log_group_name : "/aws/cloudtrail/${var.cloudtrail_name != "" ? var.cloudtrail_name : "${var.bucket_name}-trail"}"
+  retention_in_days = var.cloudtrail_log_retention_days
+
+  tags = merge(
+    var.tags,
+    {
+      Name = var.cloudtrail_cloudwatch_log_group_name != "" ? var.cloudtrail_cloudwatch_log_group_name : "/aws/cloudtrail/${var.cloudtrail_name != "" ? var.cloudtrail_name : "${var.bucket_name}-trail"}"
+    }
+  )
+}
+
+# IAM Role for CloudTrail to write to CloudWatch Logs
+data "aws_iam_policy_document" "cloudtrail_assume_role" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudtrail.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "cloudtrail_cloudwatch" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  name               = var.cloudtrail_name != "" ? "${var.cloudtrail_name}-cloudwatch-role" : "${var.bucket_name}-trail-cloudwatch-role"
+  assume_role_policy = data.aws_iam_policy_document.cloudtrail_assume_role[0].json
+
+  tags = merge(
+    var.tags,
+    {
+      Name = var.cloudtrail_name != "" ? "${var.cloudtrail_name}-cloudwatch-role" : "${var.bucket_name}-trail-cloudwatch-role"
+    }
+  )
+}
+
+data "aws_iam_policy_document" "cloudtrail_cloudwatch_policy" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  statement {
+    sid    = "CreateLogStream"
+    effect = "Allow"
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+
+    resources = ["${aws_cloudwatch_log_group.cloudtrail[0].arn}:*"]
+  }
+}
+
+resource "aws_iam_role_policy" "cloudtrail_cloudwatch" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  name   = "cloudtrail-cloudwatch-logs"
+  role   = aws_iam_role.cloudtrail_cloudwatch[0].id
+  policy = data.aws_iam_policy_document.cloudtrail_cloudwatch_policy[0].json
+}
+
+# CloudTrail for S3 Data Events
+resource "aws_cloudtrail" "main" {
+  count = var.enable_cloudtrail ? 1 : 0
+
+  name                          = var.cloudtrail_name != "" ? var.cloudtrail_name : "${var.bucket_name}-trail"
+  s3_bucket_name                = var.cloudtrail_s3_bucket_name != "" ? var.cloudtrail_s3_bucket_name : aws_s3_bucket.main.id
+  s3_key_prefix                 = var.cloudtrail_s3_key_prefix
+  include_global_service_events = false
+  enable_log_file_validation    = true
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail[0].arn}:*"
+  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_cloudwatch[0].arn
 
   event_selector {
     read_write_type           = "All"

@@ -122,6 +122,22 @@ Type: `bool`
 
 Default: `true`
 
+### <a name="input_cloudtrail_cloudwatch_log_group_name"></a> [cloudtrail\_cloudwatch\_log\_group\_name](#input\_cloudtrail\_cloudwatch\_log\_group\_name)
+
+Description: Name of the CloudWatch Log Group for CloudTrail logs
+
+Type: `string`
+
+Default: `""`
+
+### <a name="input_cloudtrail_log_retention_days"></a> [cloudtrail\_log\_retention\_days](#input\_cloudtrail\_log\_retention\_days)
+
+Description: Number of days to retain CloudTrail logs in CloudWatch Logs
+
+Type: `number`
+
+Default: `90`
+
 ### <a name="input_cloudtrail_name"></a> [cloudtrail\_name](#input\_cloudtrail\_name)
 
 Description: Name of the CloudTrail trail
@@ -207,6 +223,9 @@ Default: `{}`
 The following resources are used by this module:
 
 - [aws_cloudtrail.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/cloudtrail) (resource)
+- [aws_cloudwatch_log_group.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/cloudwatch_log_group) (resource)
+- [aws_iam_role.cloudtrail_cloudwatch](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/iam_role) (resource)
+- [aws_iam_role_policy.cloudtrail_cloudwatch](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/iam_role_policy) (resource)
 - [aws_s3_bucket.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket) (resource)
 - [aws_s3_bucket_policy.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_policy) (resource)
 - [aws_s3_bucket_public_access_block.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_public_access_block) (resource)
@@ -214,6 +233,8 @@ The following resources are used by this module:
 - [aws_s3_bucket_versioning.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_versioning) (resource)
 - [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/caller_identity) (data source)
 - [aws_iam_policy_document.bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
+- [aws_iam_policy_document.cloudtrail_assume_role](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
+- [aws_iam_policy_document.cloudtrail_cloudwatch_policy](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
 - [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/partition) (data source)
 - [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/region) (data source)
 

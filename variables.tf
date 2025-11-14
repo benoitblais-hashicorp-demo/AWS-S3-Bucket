@@ -61,6 +61,18 @@ variable "cloudtrail_s3_key_prefix" {
   default     = "cloudtrail/"
 }
 
+variable "cloudtrail_cloudwatch_log_group_name" {
+  type        = string
+  description = "Name of the CloudWatch Log Group for CloudTrail logs"
+  default     = ""
+}
+
+variable "cloudtrail_log_retention_days" {
+  type        = number
+  description = "Number of days to retain CloudTrail logs in CloudWatch Logs"
+  default     = 90
+}
+
 variable "enable_mfa_delete" {
   type        = bool
   description = "Enable MFA delete for the S3 bucket versioning configuration. Versioning must be enabled"
