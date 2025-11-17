@@ -33,60 +33,13 @@ variable "enable_encryption" {
 
 variable "enforce_ssl" {
   type        = bool
-  description = "Enforce SSL/TLS for all requests to the S3 bucket using bucket policy"
+  description = "Enforce SSL/TLS for all requests to the S3 bucket using bucket policy. Required for AWS Security Hub S3-5 compliance. Note: SSL/TLS enforcement is always enabled to meet compliance requirements"
   default     = true
-}
-
-variable "enable_cloudtrail" {
-  type        = bool
-  description = "Enable CloudTrail logging for S3 data events. Required for AWS Security Hub S3-22 compliance (object-level logging for read/write events)"
-  default     = true
-}
-
-variable "cloudtrail_name" {
-  type        = string
-  description = "Name of the CloudTrail trail"
-  default     = ""
-}
-
-variable "cloudtrail_s3_bucket_name" {
-  type        = string
-  description = "Name of the S3 bucket for CloudTrail logs. Must be a separate dedicated logging bucket (not the bucket being monitored). Required when enable_cloudtrail is true for AWS Security Hub S3-22 compliance"
-  default     = "s3-22-logging-bucket"
 
   validation {
-    condition     = var.cloudtrail_s3_bucket_name != ""
-    error_message = "cloudtrail_s3_bucket_name is required when enable_cloudtrail is true. CloudTrail logs must be stored in a separate dedicated logging bucket for S3-22 compliance."
+    condition     = var.enforce_ssl == true
+    error_message = "SSL/TLS enforcement must be enabled for AWS Security Hub S3-5 compliance. All requests to S3 buckets must use SSL."
   }
-
-  validation {
-    condition     = var.cloudtrail_s3_bucket_name == "" || var.cloudtrail_s3_bucket_name != var.bucket_name
-    error_message = "cloudtrail_s3_bucket_name must be different from bucket_name. CloudTrail logs cannot be stored in the same bucket being monitored."
-  }
-}
-
-variable "cloudtrail_s3_key_prefix" {
-  type        = string
-  description = "S3 key prefix for CloudTrail logs"
-  default     = "cloudtrail/"
-}
-
-variable "cloudtrail_cloudwatch_log_group_name" {
-  type        = string
-  description = "Name of the CloudWatch Log Group for CloudTrail logs"
-  default     = ""
-}
-
-variable "cloudtrail_log_retention_days" {
-  type        = number
-  description = "Number of days to retain CloudTrail logs in CloudWatch Logs"
-  default     = 90
-}
-
-variable "cloudtrail_kms_key_alias" {
-  type        = string
-  description = "Alias for the KMS key used to encrypt CloudTrail logs"
-  default     = ""
 }
 
 variable "enable_mfa_delete" {
