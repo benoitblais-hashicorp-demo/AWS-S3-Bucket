@@ -60,8 +60,6 @@ data "aws_region" "current" {
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
-  count = var.enforce_ssl ? 1 : 0
-
   # Deny insecure transport
   statement {
     sid    = "DenyInsecureTransport"
@@ -90,8 +88,6 @@ data "aws_iam_policy_document" "bucket_policy" {
 }
 
 resource "aws_s3_bucket_policy" "main" {
-  count = var.enforce_ssl ? 1 : 0
-
   bucket = aws_s3_bucket.main.id
   policy = data.aws_iam_policy_document.bucket_policy[0].json
 }
