@@ -39,7 +39,7 @@ variable "enforce_ssl" {
 
 variable "enable_cloudtrail" {
   type        = bool
-  description = "Enable CloudTrail logging for S3 data events"
+  description = "Enable CloudTrail logging for S3 data events. Required for AWS Security Hub S3-22 compliance (object-level logging for read/write events)"
   default     = true
 }
 

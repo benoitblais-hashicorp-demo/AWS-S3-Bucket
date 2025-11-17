@@ -92,11 +92,13 @@ This module provides the following key features:
   * Public access blocking enabled by default
   * Bucket versioning enabled by default
   * MFA delete support enabled by default for versioning protection
-* **CloudTrail Logging**: Optional AWS CloudTrail integration for S3 data event logging and audit
+* **CloudTrail Logging**: AWS CloudTrail integration for S3 data event logging and audit (enabled by default)
+  * Object-level logging for read/write events (AWS Security Hub S3-22 compliant)
   * CloudWatch Logs integration for real-time monitoring (AWS Security Hub CloudTrail-5 compliant)
   * KMS encryption for CloudTrail logs (AWS Security Hub CloudTrail-2 compliant)
   * Automatic key rotation enabled for KMS keys
-* **Flexible Configuration**: All security features can be optionally disabled
+  * **Note**: CloudTrail logging should remain enabled for AWS Security Hub S3-22 compliance
+* **Flexible Configuration**: All security features can be optionally disabled (Note: Disabling CloudTrail will cause S3-22 control failure)
 * **Bucket Name Validation**: Input validation ensures bucket names meet AWS requirements
 * **Tagging Support**: Apply custom tags and automatic management tags
 * **Conditional Resources**: Uses count meta-argument for optional feature management
@@ -212,7 +214,7 @@ Default: `"cloudtrail/"`
 
 ### <a name="input_enable_cloudtrail"></a> [enable\_cloudtrail](#input\_enable\_cloudtrail)
 
-Description: Enable CloudTrail logging for S3 data events
+Description: Enable CloudTrail logging for S3 data events. Required for AWS Security Hub S3-22 compliance (object-level logging for read/write events)
 
 Type: `bool`
 
