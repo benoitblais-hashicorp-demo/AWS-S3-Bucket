@@ -51,8 +51,17 @@ variable "cloudtrail_name" {
 
 variable "cloudtrail_s3_bucket_name" {
   type        = string
-  description = "Name of the S3 bucket for CloudTrail logs. Required if enable_cloudtrail is true"
-  default     = ""
+  description = "Name of the S3 bucket for CloudTrail logs. Must be a separate dedicated logging bucket (not the bucket being monitored). Required when enable_cloudtrail is true for AWS Security Hub S3-22 compliance"
+
+  validation {
+    condition     = var.cloudtrail_s3_bucket_name != ""
+    error_message = "cloudtrail_s3_bucket_name is required when enable_cloudtrail is true. CloudTrail logs must be stored in a separate dedicated logging bucket for S3-22 compliance."
+  }
+
+  validation {
+    condition     = var.cloudtrail_s3_bucket_name == "" || var.cloudtrail_s3_bucket_name != var.bucket_name
+    error_message = "cloudtrail_s3_bucket_name must be different from bucket_name. CloudTrail logs cannot be stored in the same bucket being monitored."
+  }
 }
 
 variable "cloudtrail_s3_key_prefix" {

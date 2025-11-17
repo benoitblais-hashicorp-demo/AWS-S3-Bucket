@@ -94,10 +94,11 @@ This module provides the following key features:
   * MFA delete support enabled by default for versioning protection
 * **CloudTrail Logging**: AWS CloudTrail integration for S3 data event logging and audit (enabled by default)
   * Object-level logging for read/write events (AWS Security Hub S3-22 compliant)
+  * CloudTrail logs stored in a separate dedicated logging bucket (required for compliance)
   * CloudWatch Logs integration for real-time monitoring (AWS Security Hub CloudTrail-5 compliant)
   * KMS encryption for CloudTrail logs (AWS Security Hub CloudTrail-2 compliant)
   * Automatic key rotation enabled for KMS keys
-  * **Note**: CloudTrail logging should remain enabled for AWS Security Hub S3-22 compliance
+  * **Note**: CloudTrail logging requires a separate S3 bucket for logs; cannot log to the same bucket being monitored
 * **Flexible Configuration**: All security features can be optionally disabled (Note: Disabling CloudTrail will cause S3-22 control failure)
 * **Bucket Name Validation**: Input validation ensures bucket names meet AWS requirements
 * **Tagging Support**: Apply custom tags and automatic management tags
@@ -141,6 +142,12 @@ The following input variables are required:
 ### <a name="input_bucket_name"></a> [bucket\_name](#input\_bucket\_name)
 
 Description: Name of the S3 bucket to create. Must be globally unique
+
+Type: `string`
+
+### <a name="input_cloudtrail_s3_bucket_name"></a> [cloudtrail\_s3\_bucket\_name](#input\_cloudtrail\_s3\_bucket\_name)
+
+Description: Name of the S3 bucket for CloudTrail logs. Must be a separate dedicated logging bucket (not the bucket being monitored). Required when enable\_cloudtrail is true for AWS Security Hub S3-22 compliance
 
 Type: `string`
 
@@ -191,14 +198,6 @@ Default: `90`
 ### <a name="input_cloudtrail_name"></a> [cloudtrail\_name](#input\_cloudtrail\_name)
 
 Description: Name of the CloudTrail trail
-
-Type: `string`
-
-Default: `""`
-
-### <a name="input_cloudtrail_s3_bucket_name"></a> [cloudtrail\_s3\_bucket\_name](#input\_cloudtrail\_s3\_bucket\_name)
-
-Description: Name of the S3 bucket for CloudTrail logs. Required if enable\_cloudtrail is true
 
 Type: `string`
 
