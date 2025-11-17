@@ -89,8 +89,8 @@ This module provides the following key features:
   * Server-side encryption with AES256 enabled by default
   * SSL/TLS enforcement for all requests enabled by default
   * Public access blocking enabled by default
-  * Bucket versioning enabled by default
-  * MFA delete support enabled by default for versioning protection
+  * Bucket versioning **always enabled** (AWS Security Hub S3-20 compliant)
+  * MFA delete **always enabled** for versioning protection (AWS Security Hub S3-20 compliant - cannot be disabled)
 * **CloudTrail Logging**: AWS CloudTrail integration for S3 data event logging and audit (enabled by default)
   * Object-level logging for read/write events (AWS Security Hub S3-22 compliant)
   * CloudTrail logs stored in a separate dedicated logging bucket (required for compliance)
@@ -98,7 +98,7 @@ This module provides the following key features:
   * KMS encryption for CloudTrail logs (AWS Security Hub CloudTrail-2 compliant)
   * Automatic key rotation enabled for KMS keys
   * **Note**: CloudTrail logging requires a separate S3 bucket for logs; cannot log to the same bucket being monitored
-* **Flexible Configuration**: All security features can be optionally disabled (Note: Disabling CloudTrail will cause S3-22 control failure)
+* **Flexible Configuration**: Some security features can be optionally disabled (Note: Versioning with MFA delete is mandatory for S3-20 compliance; Disabling CloudTrail will cause S3-22 control failure)
 * **Bucket Name Validation**: Input validation ensures bucket names meet AWS requirements
 * **Tagging Support**: Apply custom tags and automatic management tags
 * **Conditional Resources**: Uses count meta-argument for optional feature management
@@ -109,11 +109,11 @@ This module provides the following key features:
 This module provisions the following AWS resources:
 
 * **aws_s3_bucket** - Main S3 bucket resource
-* **aws_s3_bucket_versioning** - Bucket versioning configuration with MFA delete support (optional, enabled by default)
+* **aws_s3_bucket_versioning** - Bucket versioning with MFA delete (always enabled for AWS Security Hub S3-20 compliance)
 * **aws_s3_bucket_server_side_encryption_configuration** - Server-side encryption with AES256 (optional, enabled by default)
 * **aws_s3_bucket_public_access_block** - Public access block settings (optional, enabled by default)
-* **aws_s3_bucket_policy** - Bucket policy to enforce SSL/TLS and CloudTrail permissions (conditional)
-* **aws_cloudtrail** - CloudTrail trail for S3 data event logging (optional, disabled by default)
+* **aws_s3_bucket_policy** - Bucket policy to enforce SSL/TLS (conditional)
+* **aws_cloudtrail** - CloudTrail trail for S3 data event logging (optional, enabled by default)
 * **aws_cloudwatch_log_group** - CloudWatch Log Group for CloudTrail logs with 90-day retention (optional, created when CloudTrail is enabled)
 * **aws_kms_key** - KMS key for CloudTrail log encryption with automatic rotation (optional, created when CloudTrail is enabled)
 * **aws_kms_alias** - KMS key alias for easy reference (optional, created when CloudTrail is enabled)

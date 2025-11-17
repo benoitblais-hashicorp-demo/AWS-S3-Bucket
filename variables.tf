@@ -40,7 +40,7 @@ variable "enforce_ssl" {
 variable "enable_cloudtrail" {
   type        = bool
   description = "Enable CloudTrail logging for S3 data events. Required for AWS Security Hub S3-22 compliance (object-level logging for read/write events)"
-  default     = true
+  default     = false
 }
 
 variable "cloudtrail_name" {
@@ -90,14 +90,13 @@ variable "cloudtrail_kms_key_alias" {
 
 variable "enable_mfa_delete" {
   type        = bool
-  description = "Enable MFA delete for the S3 bucket versioning configuration. Versioning must be enabled"
+  description = "Enable MFA delete for the S3 bucket versioning configuration. Required for AWS Security Hub S3-20 compliance. Note: MFA delete is always enabled to meet compliance requirements"
   default     = true
-}
 
-variable "enable_versioning" {
-  type        = bool
-  description = "Enable versioning for the S3 bucket"
-  default     = true
+  validation {
+    condition     = var.enable_mfa_delete == true
+    error_message = "MFA delete must be enabled for AWS Security Hub S3-20 compliance. Versioning with MFA delete is mandatory for this module."
+  }
 }
 
 variable "force_destroy" {
