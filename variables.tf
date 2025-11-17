@@ -73,6 +73,12 @@ variable "cloudtrail_log_retention_days" {
   default     = 90
 }
 
+variable "cloudtrail_kms_key_alias" {
+  type        = string
+  description = "Alias for the KMS key used to encrypt CloudTrail logs"
+  default     = ""
+}
+
 variable "enable_mfa_delete" {
   type        = bool
   description = "Enable MFA delete for the S3 bucket versioning configuration. Versioning must be enabled"

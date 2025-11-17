@@ -36,6 +36,38 @@ To provision resources, the AWS provider requires credentials with appropriate I
 * `cloudtrail:StartLogging` - Start CloudTrail logging
 * `cloudtrail:StopLogging` - Stop CloudTrail logging
 
+**CloudWatch Logs Permissions (when CloudTrail logging is enabled):**
+* `logs:CreateLogGroup` - Create CloudWatch Log Groups
+* `logs:DeleteLogGroup` - Delete CloudWatch Log Groups
+* `logs:PutRetentionPolicy` - Configure log retention policies
+* `logs:CreateLogStream` - Create log streams (used by CloudTrail)
+* `logs:PutLogEvents` - Write log events (used by CloudTrail)
+* `logs:DescribeLogGroups` - Read log group configuration
+
+**KMS Permissions (when CloudTrail logging is enabled):**
+* `kms:CreateKey` - Create KMS keys for CloudTrail encryption
+* `kms:CreateAlias` - Create KMS key aliases
+* `kms:DeleteAlias` - Delete KMS key aliases
+* `kms:DescribeKey` - Read KMS key information
+* `kms:GetKeyPolicy` - Read KMS key policy
+* `kms:PutKeyPolicy` - Configure KMS key policy
+* `kms:EnableKeyRotation` - Enable automatic key rotation
+* `kms:DisableKeyRotation` - Disable automatic key rotation
+* `kms:ScheduleKeyDeletion` - Schedule KMS key deletion
+* `kms:GenerateDataKey` - Generate data keys (used by CloudTrail)
+* `kms:Decrypt` - Decrypt data (used by CloudTrail)
+* `kms:ListAliases` - List KMS key aliases
+* `kms:TagResource` - Apply tags to KMS keys
+* `kms:UntagResource` - Remove tags from KMS keys
+
+**IAM Permissions (when CloudTrail logging is enabled):**
+* `iam:CreateRole` - Create IAM roles for CloudTrail CloudWatch Logs
+* `iam:DeleteRole` - Delete IAM roles
+* `iam:GetRole` - Read IAM role configuration
+* `iam:PutRolePolicy` - Attach inline policies to roles
+* `iam:DeleteRolePolicy` - Delete inline policies from roles
+* `iam:GetRolePolicy` - Read inline role policies
+
 ## Authentication
 
 ### AWS Authentication
@@ -60,6 +92,9 @@ This module provides the following key features:
   * Bucket versioning enabled by default
   * MFA delete support enabled by default for versioning protection
 * **CloudTrail Logging**: Optional AWS CloudTrail integration for S3 data event logging and audit
+  * CloudWatch Logs integration for real-time monitoring (AWS Security Hub CloudTrail-5 compliant)
+  * KMS encryption for CloudTrail logs (AWS Security Hub CloudTrail-2 compliant)
+  * Automatic key rotation enabled for KMS keys
 * **Flexible Configuration**: All security features can be optionally disabled
 * **Bucket Name Validation**: Input validation ensures bucket names meet AWS requirements
 * **Tagging Support**: Apply custom tags and automatic management tags
@@ -76,3 +111,8 @@ This module provisions the following AWS resources:
 * **aws_s3_bucket_public_access_block** - Public access block settings (optional, enabled by default)
 * **aws_s3_bucket_policy** - Bucket policy to enforce SSL/TLS and CloudTrail permissions (conditional)
 * **aws_cloudtrail** - CloudTrail trail for S3 data event logging (optional, disabled by default)
+* **aws_cloudwatch_log_group** - CloudWatch Log Group for CloudTrail logs with 90-day retention (optional, created when CloudTrail is enabled)
+* **aws_kms_key** - KMS key for CloudTrail log encryption with automatic rotation (optional, created when CloudTrail is enabled)
+* **aws_kms_alias** - KMS key alias for easy reference (optional, created when CloudTrail is enabled)
+* **aws_iam_role** - IAM role for CloudTrail to write to CloudWatch Logs (optional, created when CloudTrail is enabled)
+* **aws_iam_role_policy** - IAM policy granting CloudTrail permissions to create log streams and put log events (optional, created when CloudTrail is enabled)

@@ -37,6 +37,38 @@ To provision resources, the AWS provider requires credentials with appropriate I
 * `cloudtrail:StartLogging` - Start CloudTrail logging
 * `cloudtrail:StopLogging` - Stop CloudTrail logging
 
+**CloudWatch Logs Permissions (when CloudTrail logging is enabled):**
+* `logs:CreateLogGroup` - Create CloudWatch Log Groups
+* `logs:DeleteLogGroup` - Delete CloudWatch Log Groups
+* `logs:PutRetentionPolicy` - Configure log retention policies
+* `logs:CreateLogStream` - Create log streams (used by CloudTrail)
+* `logs:PutLogEvents` - Write log events (used by CloudTrail)
+* `logs:DescribeLogGroups` - Read log group configuration
+
+**KMS Permissions (when CloudTrail logging is enabled):**
+* `kms:CreateKey` - Create KMS keys for CloudTrail encryption
+* `kms:CreateAlias` - Create KMS key aliases
+* `kms:DeleteAlias` - Delete KMS key aliases
+* `kms:DescribeKey` - Read KMS key information
+* `kms:GetKeyPolicy` - Read KMS key policy
+* `kms:PutKeyPolicy` - Configure KMS key policy
+* `kms:EnableKeyRotation` - Enable automatic key rotation
+* `kms:DisableKeyRotation` - Disable automatic key rotation
+* `kms:ScheduleKeyDeletion` - Schedule KMS key deletion
+* `kms:GenerateDataKey` - Generate data keys (used by CloudTrail)
+* `kms:Decrypt` - Decrypt data (used by CloudTrail)
+* `kms:ListAliases` - List KMS key aliases
+* `kms:TagResource` - Apply tags to KMS keys
+* `kms:UntagResource` - Remove tags from KMS keys
+
+**IAM Permissions (when CloudTrail logging is enabled):**
+* `iam:CreateRole` - Create IAM roles for CloudTrail CloudWatch Logs
+* `iam:DeleteRole` - Delete IAM roles
+* `iam:GetRole` - Read IAM role configuration
+* `iam:PutRolePolicy` - Attach inline policies to roles
+* `iam:DeleteRolePolicy` - Delete inline policies from roles
+* `iam:GetRolePolicy` - Read inline role policies
+
 ## Authentication
 
 ### AWS Authentication
@@ -61,6 +93,9 @@ This module provides the following key features:
   * Bucket versioning enabled by default
   * MFA delete support enabled by default for versioning protection
 * **CloudTrail Logging**: Optional AWS CloudTrail integration for S3 data event logging and audit
+  * CloudWatch Logs integration for real-time monitoring (AWS Security Hub CloudTrail-5 compliant)
+  * KMS encryption for CloudTrail logs (AWS Security Hub CloudTrail-2 compliant)
+  * Automatic key rotation enabled for KMS keys
 * **Flexible Configuration**: All security features can be optionally disabled
 * **Bucket Name Validation**: Input validation ensures bucket names meet AWS requirements
 * **Tagging Support**: Apply custom tags and automatic management tags
@@ -77,6 +112,11 @@ This module provisions the following AWS resources:
 * **aws\_s3\_bucket\_public\_access\_block** - Public access block settings (optional, enabled by default)
 * **aws\_s3\_bucket\_policy** - Bucket policy to enforce SSL/TLS and CloudTrail permissions (conditional)
 * **aws\_cloudtrail** - CloudTrail trail for S3 data event logging (optional, disabled by default)
+* **aws\_cloudwatch\_log\_group** - CloudWatch Log Group for CloudTrail logs with 90-day retention (optional, created when CloudTrail is enabled)
+* **aws\_kms\_key** - KMS key for CloudTrail log encryption with automatic rotation (optional, created when CloudTrail is enabled)
+* **aws\_kms\_alias** - KMS key alias for easy reference (optional, created when CloudTrail is enabled)
+* **aws\_iam\_role** - IAM role for CloudTrail to write to CloudWatch Logs (optional, created when CloudTrail is enabled)
+* **aws\_iam\_role\_policy** - IAM policy granting CloudTrail permissions to create log streams and put log events (optional, created when CloudTrail is enabled)
 
 ## Documentation
 
@@ -125,6 +165,14 @@ Default: `true`
 ### <a name="input_cloudtrail_cloudwatch_log_group_name"></a> [cloudtrail\_cloudwatch\_log\_group\_name](#input\_cloudtrail\_cloudwatch\_log\_group\_name)
 
 Description: Name of the CloudWatch Log Group for CloudTrail logs
+
+Type: `string`
+
+Default: `""`
+
+### <a name="input_cloudtrail_kms_key_alias"></a> [cloudtrail\_kms\_key\_alias](#input\_cloudtrail\_kms\_key\_alias)
+
+Description: Alias for the KMS key used to encrypt CloudTrail logs
 
 Type: `string`
 
@@ -226,6 +274,8 @@ The following resources are used by this module:
 - [aws_cloudwatch_log_group.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/cloudwatch_log_group) (resource)
 - [aws_iam_role.cloudtrail_cloudwatch](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/iam_role) (resource)
 - [aws_iam_role_policy.cloudtrail_cloudwatch](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/iam_role_policy) (resource)
+- [aws_kms_alias.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/kms_alias) (resource)
+- [aws_kms_key.cloudtrail](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/kms_key) (resource)
 - [aws_s3_bucket.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket) (resource)
 - [aws_s3_bucket_policy.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_policy) (resource)
 - [aws_s3_bucket_public_access_block.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_public_access_block) (resource)
@@ -235,6 +285,7 @@ The following resources are used by this module:
 - [aws_iam_policy_document.bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
 - [aws_iam_policy_document.cloudtrail_assume_role](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
 - [aws_iam_policy_document.cloudtrail_cloudwatch_policy](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
+- [aws_iam_policy_document.cloudtrail_kms_policy](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
 - [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/partition) (data source)
 - [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/region) (data source)
 
@@ -276,6 +327,10 @@ This module was generated using the following AWS and Terraform documentation:
 * [S3 MFA Delete](https://docs.aws.amazon.com/AmazonS3/latest/userguide/MultiFactorAuthenticationDelete.html)
 * [AWS CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html)
 * [CloudTrail Data Events](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html)
+* [CloudWatch Logs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/WhatIsCloudWatchLogs.html)
+* [AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
+* [CloudTrail Log File Encryption](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/encrypting-cloudtrail-log-files-with-aws-kms.html)
+* [AWS Security Hub CloudTrail Controls](https://docs.aws.amazon.com/securityhub/latest/userguide/cloudtrail-controls.html)
 * [S3 Bucket Naming Rules](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html)
 
 ### Terraform Provider Documentation
@@ -286,5 +341,10 @@ This module was generated using the following AWS and Terraform documentation:
 * [aws\_s3\_bucket\_public\_access\_block Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket\_public\_access\_block)
 * [aws\_s3\_bucket\_policy Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket\_policy)
 * [aws\_cloudtrail Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudtrail)
+* [aws\_cloudwatch\_log\_group Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group)
+* [aws\_kms\_key Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key)
+* [aws\_kms\_alias Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias)
+* [aws\_iam\_role Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role)
+* [aws\_iam\_role\_policy Resource](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role\_policy)
 * [aws\_iam\_policy\_document Data Source](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document)
 <!-- END_TF_DOCS -->
