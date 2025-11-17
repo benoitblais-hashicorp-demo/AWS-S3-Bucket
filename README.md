@@ -217,7 +217,7 @@ Description: Enable CloudTrail logging for S3 data events. Required for AWS Secu
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ### <a name="input_enable_encryption"></a> [enable\_encryption](#input\_enable\_encryption)
 
