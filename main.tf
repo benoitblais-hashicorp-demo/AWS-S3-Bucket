@@ -59,37 +59,29 @@ data "aws_region" "current" {
   count = var.enable_cloudtrail ? 1 : 0
 }
 
-data "aws_iam_policy_document" "bucket_policy" {
-  # Deny insecure transport
-  statement {
-    sid    = "DenyInsecureTransport"
-    effect = "Deny"
-
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
-
-    actions = [
-      "s3:*"
-    ]
-
-    resources = [
-      aws_s3_bucket.main.arn,
-      "${aws_s3_bucket.main.arn}/*"
-    ]
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
-  }
-}
-
-resource "aws_s3_bucket_policy" "main" {
+resource "aws_s3_bucket_policy" "deny_insecure_transport" {
   bucket = aws_s3_bucket.main.id
-  policy = data.aws_iam_policy_document.bucket_policy.json
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "DenyInsecureAccess",
+        Effect    = "Deny",
+        Principal = "*",
+        Action    = "s3:*",
+        Resource = [
+          "${aws_s3_bucket.main.arn}",
+          "${aws_s3_bucket.main.arn}/*"
+        ],
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      }
+    ]
+  })
 }
 
 # CloudTrail for S3 Data Events
