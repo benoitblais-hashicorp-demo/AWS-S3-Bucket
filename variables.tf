@@ -40,7 +40,7 @@ variable "enforce_ssl" {
 variable "enable_cloudtrail" {
   type        = bool
   description = "Enable CloudTrail logging for S3 data events. Required for AWS Security Hub S3-22 compliance (object-level logging for read/write events)"
-  default     = false
+  default     = true
 }
 
 variable "cloudtrail_name" {
@@ -52,6 +52,7 @@ variable "cloudtrail_name" {
 variable "cloudtrail_s3_bucket_name" {
   type        = string
   description = "Name of the S3 bucket for CloudTrail logs. Must be a separate dedicated logging bucket (not the bucket being monitored). Required when enable_cloudtrail is true for AWS Security Hub S3-22 compliance"
+  default     = "s3-22-logging-bucket"
 
   validation {
     condition     = var.cloudtrail_s3_bucket_name != ""
