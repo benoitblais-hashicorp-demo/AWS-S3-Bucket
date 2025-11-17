@@ -145,12 +145,6 @@ Description: Name of the S3 bucket to create. Must be globally unique
 
 Type: `string`
 
-### <a name="input_cloudtrail_s3_bucket_name"></a> [cloudtrail\_s3\_bucket\_name](#input\_cloudtrail\_s3\_bucket\_name)
-
-Description: Name of the S3 bucket for CloudTrail logs. Must be a separate dedicated logging bucket (not the bucket being monitored). Required when enable\_cloudtrail is true for AWS Security Hub S3-22 compliance
-
-Type: `string`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):
@@ -203,6 +197,14 @@ Type: `string`
 
 Default: `""`
 
+### <a name="input_cloudtrail_s3_bucket_name"></a> [cloudtrail\_s3\_bucket\_name](#input\_cloudtrail\_s3\_bucket\_name)
+
+Description: Name of the S3 bucket for CloudTrail logs. Must be a separate dedicated logging bucket (not the bucket being monitored). Required when enable\_cloudtrail is true for AWS Security Hub S3-22 compliance
+
+Type: `string`
+
+Default: `"s3-22-logging-bucket"`
+
 ### <a name="input_cloudtrail_s3_key_prefix"></a> [cloudtrail\_s3\_key\_prefix](#input\_cloudtrail\_s3\_key\_prefix)
 
 Description: S3 key prefix for CloudTrail logs
@@ -217,7 +219,7 @@ Description: Enable CloudTrail logging for S3 data events. Required for AWS Secu
 
 Type: `bool`
 
-Default: `false`
+Default: `true`
 
 ### <a name="input_enable_encryption"></a> [enable\_encryption](#input\_enable\_encryption)
 
