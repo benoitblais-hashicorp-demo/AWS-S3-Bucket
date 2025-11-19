@@ -46,33 +46,33 @@ resource "aws_s3_bucket_public_access_block" "main" {
   restrict_public_buckets = true
 }
 
-# S3 Bucket Policy to Enforce SSL/TLS
-data "aws_iam_policy_document" "deny_insecure_transport" {
-  statement {
-    sid    = "DenyInsecureAccess"
-    effect = "Deny"
+# # S3 Bucket Policy to Enforce SSL/TLS
+# data "aws_iam_policy_document" "deny_insecure_transport" {
+#   statement {
+#     sid    = "DenyInsecureAccess"
+#     effect = "Deny"
 
-    principals {
-      type        = "*"
-      identifiers = ["*"]
-    }
+#     principals {
+#       type        = "*"
+#       identifiers = ["*"]
+#     }
 
-    actions = ["s3:*"]
+#     actions = ["s3:*"]
 
-    resources = [
-      aws_s3_bucket.main.arn,
-      "${aws_s3_bucket.main.arn}/*"
-    ]
+#     resources = [
+#       aws_s3_bucket.main.arn,
+#       "${aws_s3_bucket.main.arn}/*"
+#     ]
 
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
-  }
-}
+#     condition {
+#       test     = "Bool"
+#       variable = "aws:SecureTransport"
+#       values   = ["false"]
+#     }
+#   }
+# }
 
-resource "aws_s3_bucket_policy" "deny_insecure_transport" {
-  bucket = aws_s3_bucket.main.id
-  policy = data.aws_iam_policy_document.deny_insecure_transport.json
-}
+# resource "aws_s3_bucket_policy" "deny_insecure_transport" {
+#   bucket = aws_s3_bucket.main.id
+#   policy = data.aws_iam_policy_document.deny_insecure_transport.json
+# }
