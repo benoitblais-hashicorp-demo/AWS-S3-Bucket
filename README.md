@@ -153,11 +153,9 @@ Default: `{}`
 The following resources are used by this module:
 
 - [aws_s3_bucket.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket) (resource)
-- [aws_s3_bucket_policy.deny_insecure_transport](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_policy) (resource)
 - [aws_s3_bucket_public_access_block.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_public_access_block) (resource)
 - [aws_s3_bucket_server_side_encryption_configuration.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_server_side_encryption_configuration) (resource)
 - [aws_s3_bucket_versioning.main](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/resources/s3_bucket_versioning) (resource)
-- [aws_iam_policy_document.deny_insecure_transport](https://registry.terraform.io/providers/hashicorp/aws/6.21.0/docs/data-sources/iam_policy_document) (data source)
 
 ## Outputs
 
