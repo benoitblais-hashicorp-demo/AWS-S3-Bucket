@@ -1,0 +1,185 @@
+name: Provision Workspace
+
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Name of the Workspace to create.'
+        required: true
+        type: string
+      project:
+        description: 'Name of the HCP Terraform Project where the Workspace will be created.'
+        required: true
+        type: string
+      github_owner:
+        description: 'GitHub organization or user owning the repository.'
+        required: false
+        type: string
+        default: 'benoitblais-hashicorp-demo'
+      repository_name:
+        description: 'Name of the GitHub repository. If not provided, the value from name will be used.'
+        required: false
+        type: string
+        default: ''
+      variables:
+        description: 'Additional variables to set on the workspace.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  build:
+    name: Provision Workspace
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TFC_API_TOKEN: ${{ secrets.TFE_TOKEN }}
+      TFC_ORGANIZATION: "benoitblais-hashicorp"
+      TFC_PROJECT: "Terraform Workspaces Factory"
+      TFC_MODULE_NAME: "workspacesfactory"
+      TFC_MODULE_PROVIDER: "tfe"
+    steps:
+
+      - name: Retreive no-code Project ID
+        id: get_no_code_Project_id
+        run: |
+          echo "INFO     | Build required variables."
+          tfc_api_url="https://app.terraform.io/api/v2"
+          auth_header="Authorization: Bearer ${TFC_API_TOKEN}"
+          content_header="Content-Type: application/vnd.api+json"
+          echo "INFO     | Get module information."
+          {
+            run=$(curl -sS --request GET --url "${tfc_api_url}/organizations/${TFC_ORGANIZATION}/registry-modules/private/${TFC_ORGANIZATION}/${TFC_MODULE_NAME}/${TFC_MODULE_PROVIDER}" \
+            --header "${auth_header}" --header "${content_header}")
+            if ! [[ "${run}" =~ "{\"data\":" ]]; then
+              echo "ERROR    | Unable to to get module information."
+              echo "${run}"
+              exit 1
+            fi
+          } ||
+          {
+            echo "ERROR    | An error occurred during the API call to get module information."
+            exit 1
+          }
+          no_code_id=$(echo "${run}" | jq -r '.data.relationships."no-code-modules".data[].id')
+          if [ -z "${no_code_id}" ] || [ "${no_code_id}" == "null" ]; then
+            echo "ERROR    | Unable to find no-code module ID."
+            exit 1
+          else
+            echo "INFO     | No-code module ID is ${no_code_id}."
+            echo "NO_CODE_ID=${no_code_id}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Retreive HCP Terraform Project ID
+        id: project
+        run: |
+          echo "INFO     | Build required variables."
+          tfc_api_url="https://app.terraform.io/api/v2"
+          auth_header="Authorization: Bearer ${TFC_API_TOKEN}"
+          content_header="Content-Type: application/vnd.api+json"
+          echo "INFO     | Run API call to get project list."
+          {
+            run=$(curl -sS --request GET --url "${tfc_api_url}/organizations/${TFC_ORGANIZATION}/projects" \
+            --header "${auth_header}" --header "${content_header}")
+            if ! [[ "${run}" =~ "{\"data\":" ]]; then
+              echo "ERROR    | Unable to get project list."
+              echo "${run}"
+              exit 1
+            fi
+          } ||
+          {
+            echo "ERROR    | An error occurred during the API call to get project list."
+            exit 1
+          }
+          project_id=$(echo "${run}" | jq -r '.data[] | select(.attributes.name=="'"${TFC_PROJECT}"'") | .id')
+          if [ -z "${project_id}" ] || [ "${project_id}" == "null" ]; then
+            echo "ERROR    | Unable to find project ID."
+            exit 1
+          else
+            echo "INFO     | Project ID is ${project_id}."
+            echo "id=${project_id}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Provision Workspace
+        id: provision
+        env:
+          NAME: ${{ github.event.inputs.name }}
+          NO_CODE_ID: ${{ steps.get_no_code_Project_id.outputs.NO_CODE_ID }}
+          PROJECT_ID: ${{ steps.project.outputs.id }}
+          PROJECT: ${{ github.event.inputs.project }}
+          GITHUB_OWNER: ${{ github.event.inputs.github_owner }}
+          REPOSITORY_NAME: ${{ github.event.inputs.repository_name }}
+          VARIABLES: ${{ github.event.inputs.variables }}
+        run: |
+          echo "INFO     | Build required variables."
+          tfc_api_url="https://app.terraform.io/api/v2"
+          auth_header="Authorization: Bearer ${TFC_API_TOKEN}"
+          content_header="Content-Type: application/vnd.api+json"
+          # convert name to lowercase and replace spaces with hyphens
+          workspace_name=$(echo "${NAME}-workspace" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+          echo "INFO     | Create workspace ${workspace_name} in project ${TFC_PROJECT}."
+          if [ -z "${REPOSITORY_NAME}" ]; then
+            vcs_repo_fullname="${GITHUB_OWNER}/${NAME}"
+          else
+            vcs_repo_fullname="${GITHUB_OWNER}/${REPOSITORY_NAME}"
+          fi
+          vcs_repo_identifier=',{"type":"vars","attributes":{"key":"vcs_repo_identifier","value":"'"${vcs_repo_fullname}"'","category":"terraform"}}'
+          if [ -z "${VARIABLES}" ]; then
+            variables=""
+          else
+            variables=',{"type":"vars","attributes":{"key":"variables","value":"'"${VARIABLES}"'","category":"terraform","hcl":"true"}}'
+          fi
+          json_string='{"data": {"type": "workspaces","attributes": {"name": "'"${workspace_name}"'","auto_apply": true},"relationships": {"project": {"data": {"id": "'"${PROJECT_ID}"'","type": "project"}},"vars": {"data": [{"type": "vars","attributes": {"key": "name","value": "'"${NAME}"'","category": "terraform"}},{"type": "vars","attributes": {"key": "project_name","value": "'"${PROJECT}"'","category": "terraform"}}'"${vcs_repo_identifier}""${variables}"']}}}}'
+          json_payload=$(echo "${json_string}" | jq)
+          run=$(curl -sS --request POST --url "${tfc_api_url}/no-code-modules/${NO_CODE_ID}/workspaces" \
+          --header "${auth_header}" --header "${content_header}" --data "${json_payload}")
+          if ! [[ "${run}" =~ "{\"data\":" ]]; then
+            echo "ERROR    | Unable to create workspace."
+            echo "${run}"
+            exit 1
+          else
+            echo "INFO     | Workspace created successfully."
+            workspace_id=$(echo "${run}" | jq -r '.data.id')
+            echo "INFO     | Workspace ID is ${workspace_id}."
+            workspace_name=$(echo "${run}" | jq -r '.data.attributes.name')
+            echo "INFO     | Workspace name is ${workspace_name}."
+            echo "workspace_id=${workspace_id}" >> "$GITHUB_OUTPUT"
+            echo "workspace_name=${workspace_name}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure Workspace Settings
+        env:
+          NAME: ${{ github.event.inputs.name }}
+          WORKSPACE_ID: ${{ steps.provision.outputs.workspace_id }}
+          WORKSPACE_NAME: ${{ steps.provision.outputs.workspace_name }}
+        run: |
+          echo "INFO     | Build required variables."
+          tfc_api_url="https://app.terraform.io/api/v2"
+          auth_header="Authorization: Bearer ${TFC_API_TOKEN}"
+          content_header="Content-Type: application/vnd.api+json"
+          json_string='{"data": {"id": "'"${WORKSPACE_ID}"'","type": "workspaces","attributes": {"structured-run-output-enabled": false,"terraform-version": "latest"}}}'
+          json_payload=$(echo "${json_string}" | jq)
+          run=$(curl -sS --request PATCH --url "${tfc_api_url}/organizations/${TFC_ORGANIZATION}/workspaces/${WORKSPACE_NAME}" \
+          --header "${auth_header}" --header "${content_header}" --data "${json_payload}")
+          if ! [[ "${run}" =~ "{\"data\":" ]]; then
+            echo "ERROR    | Unable to update workspace."
+            echo "${run}"
+            exit 1
+          else
+            echo "INFO     | Workspace updated successfully."
+          fi
+          echo "INFO     | Add tag binding to workspace."
+          json_string='{"data": [{"type": "tag-bindings","attributes": {"key": "no-code","value": "true"}}]}'
+          json_payload=$(echo "${json_string}" | jq)
+          run=$(curl -sS --request PATCH --url "${tfc_api_url}/workspaces/${WORKSPACE_ID}/tag-bindings" \
+          --header "${auth_header}" --header "${content_header}" --data "${json_payload}")
+          if ! [[ "${run}" =~ "{\"data\":" ]]; then
+            echo "ERROR    | Unable to add tag binding to workspace."
+            echo "${run}"
+            exit 1
+          else
+            echo "INFO     | Tag binding added to workspace successfully."
+          fi
